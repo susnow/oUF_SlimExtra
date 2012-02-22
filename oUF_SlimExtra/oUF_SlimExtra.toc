@@ -1,0 +1,8 @@
+## Interface: 40300
+## Title: oUF_SlimExtra
+## Author: susnow
+## Notes: oUF_SlimExtra
+
+config.lua
+styleFunc.lua
+core.lua
