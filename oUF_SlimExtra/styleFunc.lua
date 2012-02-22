@@ -15,23 +15,30 @@ function UF:Parent(self,unit,flag)
 		self:SetAttribute(key, 'focus')
 	end
 	self:SetBackdrop(CFG.Parent.Texture)
-	self:SetBackdropColor(unpack(CFG.BG_Alpha_Color))
-	self:SetBackdropBorderColor(unpack(CFG.BD_Color))
+	self:SetBackdropColor(unpack(CFG.Alpha_Color))
+	self:SetBackdropBorderColor(unpack(CFG.Alpha_Color))
 	self:SetSize(CFG.Parent.Width[flag],CFG.Parent.Height[flag])
 end
 
-function UF.PostUpdateHealth(Health,unit,min,max)
+function UF.PostUpdateHealth(Health,unit)--,min,max)
 	local self = Health:GetParent()
 	local hp = UnitHealth(unit)
 	local hpMax = UnitHealthMax(unit)
-	if UnitIsDead(unit) then
+	if UnitIsDead(unit) or hp == 0 then
 		Health.Value:SetText("Dead")
+		Health.Value:SetTextColor(1,0,0)
+		Health.Percent:SetText("")
 	elseif UnitIsGhost(unit) then
 		Health.Value:SetText("Ghost")
+		Health.Value:SetTextColor(.3,.3,.3)
+		Health.Percent:SetText("")
 	elseif not UnitIsConnected(unit) then
-		Health.Value:SetText("D/C")
+		Health.Value:SetText("Disconnect")
+		Health.Value:SetTextColor(1,1,0)
+		Health.Percent:SetText("")
 	else
 		Health.Value:SetText(hp)
+		Health.Value:SetTextColor(1,1,1)
 		Health.Percent:SetText(string.format("%d",hp/hpMax*100))
 	end
 	if hp/hpMax <= 0.3 then
@@ -49,9 +56,14 @@ function UF:Health(self,unit,flag)
 	obj:SetSize(CFG.HP.Width[flag],CFG.HP.Height[flag])
 	obj:SetStatusBarTexture(CFG.HP.Texture)
 	obj.frequentUpdates = true
-	obj:SetPoint("TOPLEFT",self)
+	obj:SetPoint("LEFT",self,0,0)
 	obj:SetStatusBarColor(unpack(CFG.BG_Color))
 	obj.PostUpdate = UF.PostUpdateHealth
+	obj.BG:SetAllPoints(obj)
+	obj.BG:SetBackdrop(CFG.Parent.Texture)
+	obj.BG:SetBackdropColor(unpack(CFG.Alpha_Color))
+	obj.BG:SetBackdropBorderColor(unpack(CFG.BD_Color))
+
 end
 
 function UF:HealthValue(self,unit)
@@ -60,11 +72,47 @@ function UF:HealthValue(self,unit)
 	obj.Percent:SetPoint("RIGHT",self.Health,"LEFT",-4,0)
 	obj.Value:SetFont(CFG.HP.Font,12,"CHROMEOUTLINE")
 	obj.Value:SetPoint("TOPRIGHT",self.Health,"BOTTOMRIGHT",0,-4)
-	obj.Value:SetAlpha(.2)
+	obj.Value:SetAlpha(.5)
 end
 
-function UF:PaddingHealth(self,unit,flag)
+function UF:PaddingHealth(self,unit)
+	local obj = self.Health.Padding
+	local hp = self.Health
+	obj:SetStatusBarTexture(CFG.HP.Texture)
+	obj:SetPoint("TOPRIGHT",self.Health,0,-1)
+	obj:SetPoint("BOTTOMRIGHT",self.Health,0,1)
+	obj:SetScript("OnUpdate",function(self,elapsed)
+		obj.nextUpdate = obj.nextUpdate + elapsed
+		if obj.nextUpdate > 0.01 then
+			local class = select(2,UnitClass(unit))
+			local color = RAID_CLASS_COLORS[class]
+			local v = 1-UnitHealth(unit)/UnitHealthMax(unit)
+			local dw = hp:GetWidth() * v
+			if v == 0 then
+				obj:SetWidth(0)
+				obj:SetStatusBarColor(0,0,0,0)
+			elseif v > 0 then
+				obj:SetWidth(dw)		
+				obj:SetStatusBarColor(color.r,color.g,color.b,.7)
+			end
+			obj.nextUpdate = 0
+		end
+	end)
+end
 
+function UF:Power(self,unit,flag)
+	local obj = self.Power
+	obj:SetSize(CFG.PP.Width[flag],CFG.PP.Height[flag])
+	obj:SetStatusBarTexture(CFG.PP.Texture)
+	obj:SetPoint("TOPLEFT",self.Health,"BOTTOMLEFT",0,0)
+end
+
+
+function UF:Name(self,unit)
+	local obj = self.Name
+	obj:SetFont(CFG.HP.Font,14,"OUTLINE")
+	obj:SetPoint("BOTTOMRIGHT",self.Health)
+	self:Tag(obj,"[name]")
 end
 
 

@@ -12,9 +12,14 @@ local CreateObjects = function(self,unit)
 	self.menu = menu
 	self.nextUpdate = 0
 	self.Health = CreateFrame("StatusBar",nil,self)
+	self.Health.BG = CreateFrame("Frame",nil,self.Health)
 	self.Health.Padding = CreateFrame("StatusBar",nil,self.Health)
+	self.Health.Padding.nextUpdate = 0
 	self.Health.Percent = self.Health:CreateFontString(nil,"OVERLAY")
 	self.Health.Value = self.Health:CreateFontString(nil,"OVERLAY")
+	self.Power = CreateFrame("StatusBar",nil,self)
+	self.Power.BG = CreateFrame("Frame",nil,self.Power)
+	self.Name = self:CreateFontString(nil,"OVERLAY")
 end
 
 local UnitSpecific = {
@@ -22,13 +27,19 @@ local UnitSpecific = {
 		CreateObjects(self,unit)
 		UF:Parent(self,unit,"Primary")
 		UF:Health(self,unit,"Primary")
+		UF:PaddingHealth(self,unit)
 		UF:HealthValue(self,unit)
+		--UF:Power(self,unit,"Primary")
+	--	UF:Name(self,unit)
 	end,
 	target = function(self,unit)
 		CreateObjects(self,unit)
 		UF:Parent(self,unit,"Primary")
 		UF:Health(self,unit,"Primary")
 		UF:HealthValue(self,unit)
+		UF:PaddingHealth(self,unit)
+		UF:HealthValue(self,unit)
+	--	UF:Name(self,unit)
 	end,
 }
 
