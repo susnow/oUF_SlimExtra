@@ -24,15 +24,16 @@ function UF.PostUpdateHealth(Health,unit,min,max)
 	local self = Health:GetParent()
 	local hp = UnitHealth(unit)
 	local hpMax = UnitHealthMax(unit)
-		if UnitIsDead(unit) then
-			Health.Percent:SetText("Dead")
-		elseif UnitIsGhost(unit) then
-			Health.Percent:SetText("Ghost")
-		elseif not UnitIsConnected(unit) then
-			Health.Percent:SetText("D/C")
-		else
-			Health.Percent:SetText(string.format("%d",hp/hpMax*100))
-		end
+	if UnitIsDead(unit) then
+		Health.Value:SetText("Dead")
+	elseif UnitIsGhost(unit) then
+		Health.Value:SetText("Ghost")
+	elseif not UnitIsConnected(unit) then
+		Health.Value:SetText("D/C")
+	else
+		Health.Value:SetText(hp)
+		Health.Percent:SetText(string.format("%d",hp/hpMax*100))
+	end
 	if hp/hpMax <= 0.3 then
 		Health.Percent:SetTextColor(1,0,0,1)
 	elseif hp/hpMax <= 0.6 then
@@ -57,7 +58,9 @@ function UF:HealthValue(self,unit)
 	local obj = self.Health
 	obj.Percent:SetFont(CFG.HP.Font,16,"OUTLINE")
 	obj.Percent:SetPoint("RIGHT",self.Health,"LEFT",-4,0)
-	obj.Percent:SetText("100")
+	obj.Value:SetFont(CFG.HP.Font,12,"CHROMEOUTLINE")
+	obj.Value:SetPoint("TOPRIGHT",self.Health,"BOTTOMRIGHT",0,-4)
+	obj.Value:SetAlpha(.2)
 end
 
 function UF:PaddingHealth(self,unit,flag)

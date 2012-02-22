@@ -14,6 +14,7 @@ local CreateObjects = function(self,unit)
 	self.Health = CreateFrame("StatusBar",nil,self)
 	self.Health.Padding = CreateFrame("StatusBar",nil,self.Health)
 	self.Health.Percent = self.Health:CreateFontString(nil,"OVERLAY")
+	self.Health.Value = self.Health:CreateFontString(nil,"OVERLAY")
 end
 
 local UnitSpecific = {
