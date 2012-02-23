@@ -20,7 +20,7 @@ function UF:Parent(self,unit,flag)
 	self:SetSize(CFG.Parent.Width[flag],CFG.Parent.Height[flag])
 end
 
-function UF.PostUpdateHealth(Health,unit)--,min,max)
+function UF.PostUpdateHealth(Health,unit)
 	local self = Health:GetParent()
 	local hp = UnitHealth(unit)
 	local hpMax = UnitHealthMax(unit)
@@ -50,37 +50,45 @@ function UF.PostUpdateHealth(Health,unit)--,min,max)
 	end
 end
 
-
 function UF:Health(self,unit,flag)
 	local obj = self.Health
 	obj:SetSize(CFG.HP.Width[flag],CFG.HP.Height[flag])
 	obj:SetStatusBarTexture(CFG.HP.Texture)
 	obj.frequentUpdates = true
 	obj:SetPoint("LEFT",self,0,0)
-	obj:SetStatusBarColor(unpack(CFG.BG_Color))
+	if CFG.Class_Color then
+		obj.colorClass = true
+	else
+		obj.colorClass = false
+		obj:SetStatusBarColor(unpack(CFG.BG_Color))
+	end
 	obj.PostUpdate = UF.PostUpdateHealth
 	obj.BG:SetAllPoints(obj)
 	obj.BG:SetBackdrop(CFG.Parent.Texture)
 	obj.BG:SetBackdropColor(unpack(CFG.Alpha_Color))
 	obj.BG:SetBackdropBorderColor(unpack(CFG.BD_Color))
-
 end
 
-function UF:HealthValue(self,unit)
+function UF:HealthValue(self,unit,flag)
 	local obj = self.Health
 	obj.Percent:SetFont(CFG.HP.Font,16,"OUTLINE")
 	obj.Percent:SetPoint("RIGHT",self.Health,"LEFT",-4,0)
 	obj.Value:SetFont(CFG.HP.Font,12,"CHROMEOUTLINE")
 	obj.Value:SetPoint("TOPRIGHT",self.Health,"BOTTOMRIGHT",0,-4)
 	obj.Value:SetAlpha(.5)
+	if flag == "II" then
+		obj.Percent:Hide()
+	elseif flag == "I" then
+		obj.Percent:Show()
+	end
 end
 
 function UF:PaddingHealth(self,unit)
 	local obj = self.Health.Padding
 	local hp = self.Health
 	obj:SetStatusBarTexture(CFG.HP.Texture)
-	obj:SetPoint("TOPRIGHT",self.Health,0,-1)
-	obj:SetPoint("BOTTOMRIGHT",self.Health,0,1)
+	obj:SetPoint("TOPRIGHT",hp,-1,-1)
+	obj:SetPoint("BOTTOMRIGHT",hp,-1,1)
 	obj:SetScript("OnUpdate",function(self,elapsed)
 		obj.nextUpdate = obj.nextUpdate + elapsed
 		if obj.nextUpdate > 0.01 then
@@ -90,30 +98,192 @@ function UF:PaddingHealth(self,unit)
 			local dw = hp:GetWidth() * v
 			if v == 0 then
 				obj:SetWidth(0)
-				obj:SetStatusBarColor(0,0,0,0)
+				obj:SetStatusBarColor(unpack(CFG.Alpha_Color))
 			elseif v > 0 then
-				obj:SetWidth(dw)		
-				obj:SetStatusBarColor(color.r,color.g,color.b,.7)
+				if UnitIsDead(unit) then
+					obj:SetWidth(dw)
+				else
+					obj:SetWidth(dw-2)		
+				end
+				if CFG.Class_Color then
+					obj:SetStatusBarColor(unpack(CFG.BG_Color))
+				else
+					obj:SetStatusBarColor(color.r,color.g,color.b,.7)
+				end
 			end
 			obj.nextUpdate = 0
 		end
 	end)
 end
 
-function UF:Power(self,unit,flag)
-	local obj = self.Power
-	obj:SetSize(CFG.PP.Width[flag],CFG.PP.Height[flag])
-	obj:SetStatusBarTexture(CFG.PP.Texture)
-	obj:SetPoint("TOPLEFT",self.Health,"BOTTOMLEFT",0,0)
+function UF.PostUpdatePower(Power,unit)
+	local self = Power:GetParent()
+	local pp = UnitPower(unit)
+	local ppMax = UnitPowerMax(unit)
+	local ppType = UnitPowerType(unit)
+	Power.Value:SetTextColor(unpack(CFG.PP_Color[ppType]))
+	if UnitIsDead(unit) or UnitIsGhost(unit) or not UnitIsConnected(unit) or not UnitIsPlayer(unit) then
+		Power.Value:SetText("")
+	else
+		Power.Value:SetText(pp)
+	end
 end
+
+function UF:PowerValue(self,unit,flag)
+	local obj = self.Power
+	obj.Value:SetFont(CFG.PP.Font,12,"CHROMEOUTLINE")
+	obj.Value:SetPoint("TOPRIGHT",self.Health.Value,"TOPLEFT",-4,0)
+	obj.Value:SetAlpha(0.5)
+	obj.PostUpdate = UF.PostUpdatePower
+	if flag == "II" then
+		obj.Value:Hide()
+	elseif flag == "I" then
+		obj.Value:Show()
+	end
+end
+
+function UF:Castbar(self,unit,flag)
+	local obj = self.Castbar
+	obj:SetStatusBarTexture(CFG.CB.Texture)
+	obj:SetSize(CFG.CB.Width[flag],CFG.CB.Height[flag])
+	obj:SetPoint("TOPLEFT",self.Health,"BOTTOMLEFT",0,-8)		
+end
+
+function UF:CastbarStrings(self,unit)
+	local obj = self.Castbar
+	obj.Text:SetFont(CFG.Global_Font,12,"OUTLINE")
+	obj.Time:SetFont(CFG.Global_Font,12,"OUTLINE")
+	obj.Text:SetPoint("CENTER",obj)
+	obj.Time:SetPoint("LEFT",obj.Text,"RIGHT")
+end
+
+
+function UF.PostCreateIcon(icons,button)
+	--button.cd.noOCC = true
+	--button.cd.noCooldown = true
+	--icons.disableCooldown = true
+	button:SetSize(button:GetWidth(),button:GetWidth()*0.85)
+	button.cd:SetDrawEdge(false)
+	button.cd:SetReverse(true)
+	button.icon:SetTexCoord(.1,.9,.2,.9)
+	local backdrops = CreateFrame("Frame", nil, button)
+	backdrops:SetPoint("TOPLEFT", button, -1, 1)
+	backdrops:SetPoint("BOTTOMRIGHT", button, 1, -1)
+	backdrops:SetFrameStrata("BACKGROUND")
+	backdrops:SetBackdrop(CFG.Parent.Texture)
+	backdrops:SetBackdropColor(CFG.Alpha_Color)
+	backdrops:SetBackdropBorderColor(CFG.BD_Color)
+
+	button.time = button:CreateFontString(nil,"OVERLAY")
+	--button.time:SetFontObject(font)
+	--do local f,s,g = button.time:GetFont()
+	button.time:SetFont(CFG.Global_Font,10,"NORMAL")
+	--end
+	button.time:SetPoint("CENTER",button,"TOP")
+	button.time:SetJustifyH("CENTER")
+	--button.time:SetTextColor(1,1,1,1)
+	button.time:SetVertexColor(1,0,0,1)
+
+	button.count = button:CreateFontString(nil,"OVERLAY")
+--	button.count:SetFontObject(ChatFontNormal)
+--	do local f,s,g = button.count:GetFont()
+		button.count:SetFont(CFG.Global_Font,10,"OUTLINE")
+--	end
+	button.count:SetPoint("BOTTOMRIGHT",button,0,0)
+end
+
+function UF.PostUpdateIcon(icons,unit,icon,index,offset)
+	local _,_,_,_,_,_,_,caster = UnitAura(unit,index,icon.filter)
+	if caster ~= "player" and caster ~= "vehicle" then
+		icon.icon:SetDesaturated(true)
+		icon.overlay:SetVertexColor(.4,.4,.4)
+	else
+		icon.icon:SetDesaturated(false)
+	end
+end
+
+function UF:Auras(self,unit,flag)
+	local obj = self.Auras
+	obj:SetHeight(10)
+	obj:SetPoint("BOTTOMLEFT",self,"TOPLEFT",0,6)
+	obj.initalAnchor = "TOPRIGHT"
+	
+	obj.spacing = 4
+	if flag == "I" then
+		obj.size = (self:GetWidth() - obj.spacing*8)/9 
+		obj.numBuffs = 9
+		obj.numDebuffs = 9
+	elseif flag == "II" then
+		obj.size = (self:GetWidth() - obj.spacing*2.7)/3
+		obj.numBuffs = 3
+		obj.numDebuffs = 3
+	elseif flag == "III" then
+		obj.size = (self:GetWidth() - obj.spacing*6)/7
+
+	end
+	obj:SetWidth(self:GetWidth())
+	obj.gap = true
+	--obj.numBuffs = 12
+	--obj.numDebuffs = 10
+	obj["growth-x"] = "RIGHT"
+	obj.PostCreateIcon = UF.PostCreateIcon
+	obj.PostUpdateIcon = UF.PostUpdateIcon
+end
+
 
 
 function UF:Name(self,unit)
 	local obj = self.Name
-	obj:SetFont(CFG.HP.Font,14,"OUTLINE")
-	obj:SetPoint("BOTTOMRIGHT",self.Health)
+	obj:SetFont(CFG.Global_Font,12,"OUTLINE")
+	obj:SetPoint("BOTTOMRIGHT",self.Health.Value)
 	self:Tag(obj,"[name]")
+	obj:SetAlpha(0)
 end
+
+function UF:TagOnEnter(self,unit)
+	self:HookScript("OnEnter",function(self)
+		local oldTime = GetTime()
+		self:SetScript("OnUpdate",function(self,elapsed)
+			self.nextUpdate = self.nextUpdate + elapsed
+			if self.nextUpdate > 0.01 then
+				local newTime = GetTime()
+				if (newTime - oldTime) < 0.5 then
+					local tempNum = tonumber(string.format("%6.2f",(newTime - oldTime)))*2
+					self.Name:SetAlpha(tempNum)
+					self.Health.Percent:SetAlpha(1 - tempNum/2)
+					self.Health.Value:SetAlpha(1 - tempNum)	
+					self.Power.Value:SetAlpha(1 - tempNum)
+				else
+					self:SetScript("OnUpdate",nil)
+				end
+				self.nextUpdate = 0
+			end
+		end)
+	end)
+end
+
+function UF:TagOnLeave(self,unit)
+	self:HookScript("OnLeave",function(self)
+		local oldTime = GetTime()
+		self:SetScript("OnUpdate",function(self,elapsed)
+			self.nextUpdate = self.nextUpdate + elapsed
+			if self.nextUpdate > 0.01 then
+				local newTime = GetTime()
+				if (newTime - oldTime) < 0.5 then
+					local tempNum = tonumber(string.format("%6.2f",(newTime - oldTime)))*2
+					self.Name:SetAlpha(1- tempNum)
+					self.Health.Percent:SetAlpha(tempNum)
+					self.Health.Value:SetAlpha(tempNum)	
+					self.Power.Value:SetAlpha(tempNum)
+				else
+					self:SetScript("OnUpdate",nil)
+				end
+				self.nextUpdate = 0
+			end
+		end)
+	end)
+end
+
 
 
 --function UF.PostUpdateHealth(Health,unit,min,max)
