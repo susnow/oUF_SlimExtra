@@ -49,6 +49,8 @@ local UnitSpecific = {
 		UF:TagOnEnter(self,unit)
 		UF:TagOnLeave(self,unit)
 		UF:Auras(self,unit,"I")
+		UF:Castbar(self,unit,"I")
+		UF:CastbarStrings(self,unit)
 	end,
 	targettarget = function(self,unit)
 		CreateObjects(self,unit)

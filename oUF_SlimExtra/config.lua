@@ -57,12 +57,13 @@ CFG.PP = {
 	},
 }
 CFG.CB = {
+	Color = {1,.7,0,1},
 	Texture = tex.."hpTex.tga",
 	Font = font.."int5.ttf",
 	Width = {
-		I = 150,	
-		II = 50,
-		III = 100,
+		I = 210,	
+		II = 70,
+		III = 140,
 	},
 	Height = {
 		I = 2,

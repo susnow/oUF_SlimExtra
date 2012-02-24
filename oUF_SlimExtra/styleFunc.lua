@@ -146,15 +146,27 @@ function UF:Castbar(self,unit,flag)
 	local obj = self.Castbar
 	obj:SetStatusBarTexture(CFG.CB.Texture)
 	obj:SetSize(CFG.CB.Width[flag],CFG.CB.Height[flag])
-	obj:SetPoint("TOPLEFT",self.Health,"BOTTOMLEFT",0,-8)		
+	obj:SetPoint("TOPLEFT",self.Health,"BOTTOMLEFT",0,-20)		
 end
 
 function UF:CastbarStrings(self,unit)
 	local obj = self.Castbar
+	obj:SetStatusBarTexture(CFG.CB.Texture)
+	obj:SetStatusBarColor(unpack(CFG.CB.Color))
+	obj.BG:SetBackdrop(CFG.Parent.Texture)
+	obj.BG:SetBackdropColor(unpack(CFG.Alpha_Color))
+	obj.BG:SetBackdropBorderColor(unpack(CFG.BD_Color))
+	obj.BG:SetPoint("TOPLEFT",obj.Icon,-1,1)
+	obj.BG:SetPoint("BOTTOMRIGHT",obj.Icon,1,-1)
 	obj.Text:SetFont(CFG.Global_Font,12,"OUTLINE")
 	obj.Time:SetFont(CFG.Global_Font,12,"OUTLINE")
-	obj.Text:SetPoint("CENTER",obj)
+	obj.Text:SetPoint("TOPLEFT",obj.Icon,"TOPRIGHT",4,0)
 	obj.Time:SetPoint("LEFT",obj.Text,"RIGHT")
+	obj.Icon:SetSize(20,12)
+	obj.Icon:SetPoint("BOTTOMLEFT",obj,"TOPLEFT",1,4)
+	obj.Icon:SetTexCoord(.1,.9,.2,.9)
+	obj.Spark:SetBlendMode("ADD")
+	obj.Spark:SetSize(2,obj:GetHeight()*2.5)
 end
 
 
@@ -175,10 +187,7 @@ function UF.PostCreateIcon(icons,button)
 	backdrops:SetBackdropBorderColor(CFG.BD_Color)
 
 	button.time = button:CreateFontString(nil,"OVERLAY")
-	--button.time:SetFontObject(font)
-	--do local f,s,g = button.time:GetFont()
 	button.time:SetFont(CFG.Global_Font,10,"NORMAL")
-	--end
 	button.time:SetPoint("CENTER",button,"TOP")
 	button.time:SetJustifyH("CENTER")
 	--button.time:SetTextColor(1,1,1,1)
