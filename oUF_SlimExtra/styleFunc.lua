@@ -20,6 +20,18 @@ function UF:Parent(self,unit,flag)
 	self:SetSize(CFG.Parent.Width[flag],CFG.Parent.Height[flag])
 end
 
+function UF.FormatNumzzz(num)
+	local flag = math.log10(num)
+		if flag >= 7 then
+			num = string.format("%6.1f%s",num/1e7,"KW")
+		elseif flag >= 4 then
+			num = string.format("%6.1f%s",num/1e4,"W")
+		elseif flag >= 0 then
+			num = num
+		end
+		return num
+end
+
 function UF.PostUpdateHealth(Health,unit)
 	local self = Health:GetParent()
 	local hp = UnitHealth(unit)
@@ -37,9 +49,21 @@ function UF.PostUpdateHealth(Health,unit)
 		Health.Value:SetTextColor(1,1,0)
 		Health.Percent:SetText("")
 	else
-		Health.Value:SetText(hp)
-		Health.Value:SetTextColor(1,1,1)
+		Health.Value:SetText(UF.FormatNumzzz(hp))
 		Health.Percent:SetText(string.format("%d",hp/hpMax*100))
+		if UnitIsPlayer(unit) then
+			if UnitIsEnemy(unit,"player") then
+				Health.Value:SetTextColor(unpack(CFG.Unit_Color.PE))
+			else
+				Health.Value:SetTextColor(unpack(CFG.Unit_Color.PF))
+			end
+		else
+			if UnitIsEnemy(unit,"player") then
+				Health.Value:SetTextColor(unpack(CFG.Unit_Color.NE))
+			else
+				Health.Value:SetTextColor(unpack(CFG.Unit_Color.NF))
+			end
+		end
 	end
 	if hp/hpMax <= 0.3 then
 		Health.Percent:SetTextColor(1,0,0,1)
@@ -125,7 +149,7 @@ function UF.PostUpdatePower(Power,unit)
 	if UnitIsDead(unit) or UnitIsGhost(unit) or not UnitIsConnected(unit) or not UnitIsPlayer(unit) then
 		Power.Value:SetText("")
 	else
-		Power.Value:SetText(pp)
+		Power.Value:SetText(UF.FormatNumzzz(pp))
 	end
 end
 
@@ -146,11 +170,6 @@ function UF:Castbar(self,unit,flag)
 	local obj = self.Castbar
 	obj:SetStatusBarTexture(CFG.CB.Texture)
 	obj:SetSize(CFG.CB.Width[flag],CFG.CB.Height[flag])
-	obj:SetPoint("TOPLEFT",self.Health,"BOTTOMLEFT",0,-20)		
-end
-
-function UF:CastbarStrings(self,unit)
-	local obj = self.Castbar
 	obj:SetStatusBarTexture(CFG.CB.Texture)
 	obj:SetStatusBarColor(unpack(CFG.CB.Color))
 	obj.BG:SetBackdrop(CFG.Parent.Texture)
@@ -167,8 +186,18 @@ function UF:CastbarStrings(self,unit)
 	obj.Icon:SetTexCoord(.1,.9,.2,.9)
 	obj.Spark:SetBlendMode("ADD")
 	obj.Spark:SetSize(2,obj:GetHeight()*2.5)
+	if flag == "II" then
+		obj:ClearAllPoints()
+	elseif flag == "I" then
+		obj:ClearAllPoints()
+		obj:SetPoint("TOPLEFT",self.Health,"BOTTOMLEFT",0,-20)		
+	elseif flag == "III" then
+		obj:ClearAllPoints()
+		obj.Text:ClearAllPoints()
+		obj.Time:ClearAllPoints()
+		obj:SetPoint("TOPLEFT",self.Health,"BOTTOMLEFT",0,-20)		
+	end
 end
-
 
 function UF.PostCreateIcon(icons,button)
 	--button.cd.noOCC = true
@@ -190,14 +219,10 @@ function UF.PostCreateIcon(icons,button)
 	button.time:SetFont(CFG.Global_Font,10,"NORMAL")
 	button.time:SetPoint("CENTER",button,"TOP")
 	button.time:SetJustifyH("CENTER")
-	--button.time:SetTextColor(1,1,1,1)
 	button.time:SetVertexColor(1,0,0,1)
 
 	button.count = button:CreateFontString(nil,"OVERLAY")
---	button.count:SetFontObject(ChatFontNormal)
---	do local f,s,g = button.count:GetFont()
-		button.count:SetFont(CFG.Global_Font,10,"OUTLINE")
---	end
+	button.count:SetFont(CFG.Global_Font,10,"OUTLINE")
 	button.count:SetPoint("BOTTOMRIGHT",button,0,0)
 end
 
@@ -228,18 +253,13 @@ function UF:Auras(self,unit,flag)
 		obj.numDebuffs = 3
 	elseif flag == "III" then
 		obj.size = (self:GetWidth() - obj.spacing*6)/7
-
 	end
 	obj:SetWidth(self:GetWidth())
 	obj.gap = true
-	--obj.numBuffs = 12
-	--obj.numDebuffs = 10
 	obj["growth-x"] = "RIGHT"
 	obj.PostCreateIcon = UF.PostCreateIcon
 	obj.PostUpdateIcon = UF.PostUpdateIcon
 end
-
-
 
 function UF:Name(self,unit)
 	local obj = self.Name
@@ -248,6 +268,99 @@ function UF:Name(self,unit)
 	self:Tag(obj,"[name]")
 	obj:SetAlpha(0)
 end
+
+function UF:ComboPoints(self)
+	local obj = self.ComboPoints
+	obj:SetSize(50,50)
+	obj:SetPoint("LEFT",oUF_SlimExtraPlayer,"RIGHT",10,0)
+	obj.Num:SetPoint("CENTER",obj)
+	obj.Num:SetFont(CFG.HP.Font,16,"OUTLINE")
+	obj:RegisterEvent("UNIT_COMBO_POINTS")
+	obj:RegisterEvent("PLAYER_TARGET_CHANGED")
+	obj:SetScript("OnEvent",function()
+		local point = GetComboPoints("player","target")
+		if point > 0 then
+			obj.Num:SetText(point)	
+			if point == 5 then
+				obj.Num:SetTextColor(unpack(CFG.PP_Color[1]))
+			else
+				obj.Num:SetTextColor(unpack(CFG.PP_Color[3]))
+			end
+		else
+			obj.Num:SetText("")
+		end
+	end)
+end
+
+function UF:ClassElements(self,unit)
+	local class = select(2,UnitClass("player"))
+	local classElements = {
+		["DEATHKNIGHT"] = function() 
+			RuneFrame:ClearAllPoints()
+			RuneFrame:Hide()
+			RuneFrame:UnregisterAllEvents()
+			local obj = self.RunesBar
+			obj:SetSize(self:GetWidth(),4)
+			obj:SetPoint("TOPLEFT",self,"BOTTOMLEFT")
+			obj:RegisterEvent("RUNE_POWER_UPDATE")
+			obj:RegisterEvent("RUNE_TYPE_UPDATE")
+			local RuneColor = {
+				[1] = {r = 0.7, g = 0.1, b = 0.1},
+				[2] = {r = 0.7, g = 0.1, b = 0.1},
+				[3] = {r = 0.4, g = 0.8, b = 0.2},
+				[4] = {r = 0.4, g = 0.8, b = 0.2},
+				[5] = {r = 0.0, g = 0.6, b = 0.8},
+				[6] = {r = 0.0, g = 0.6, b = 0.8},
+			}
+			for i = 1, 6 do
+				obj.Runes[i] = CreateFrame("Frame",nil,obj)
+				obj.Runes[i]:SetSize(10,4)
+				obj.Runes[i].Num = obj.Runes[i]:CreateFontString(nil,"ARTWORK")
+				obj.Runes[i].Num:SetFont(CFG.HP.Font,12,"CHROMEOUTLINE")
+				obj.Runes[i].Num:SetPoint("CENTER",obj.Runes[i])
+				obj.Runes[i].Num:SetText("#")
+				obj.Runes[i].Num:SetTextColor(RuneColor[i].r,RuneColor[i].g,RuneColor[i].b)
+				if  i == 1 then
+					obj.Runes[i]:SetPoint("LEFT",obj)
+				else
+					obj.Runes[i]:SetPoint("LEFT",obj.Runes[i-1],"RIGHT",4,0)
+				end
+			end
+			obj:SetScript("OnEvent",function(self,event) 
+				for i = 1, 6 do
+					if event == "RUNE_POWER_UPDATE" then
+						local start, duration, runeReady = GetRuneCooldown(i)
+						local time = floor(GetTime() - start)
+						local cd = ceil(duration - time)
+						if runeReady or UnitIsDeadOrGhost("player") then
+							obj.Runes[i].Num:SetText("#")
+						elseif not UnitIsDeadOrGhost("player") and cd then
+							obj.Runes[i].Num:SetText(cd)
+						end
+					elseif event == "RUNE_TYPE_UPDATE" then
+						local runeType = GetRuneType(i)
+						if runeType == 4 then
+							obj.Runes[i].Num:SetTextColor(1,0,1)
+						else
+							obj.Runes[i].Num:SetTextColor(RuneColor[i].r,RuneColor[i].g,RuneColor[i].b)
+						end
+					end
+				end
+			end)
+		end,
+		["SHAMAN"] = function() end,
+		["DRUID"] = function() end,
+		["PALADIN"] = function() end,
+		["WARLOCK"] = function() end,
+		["MAGE"] = function() return end,
+		["PRIEST"] = function() return end,
+		["ROGUE"] = function() return end,
+		["HUNTER"] = function() return end,
+		["WARRIOR"] = function() return end,
+	}
+	do classElements[class]() end 
+end
+
 
 function UF:TagOnEnter(self,unit)
 	self:HookScript("OnEnter",function(self)

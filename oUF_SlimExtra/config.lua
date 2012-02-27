@@ -19,6 +19,12 @@ CFG.PP_Color = {
 	[3] = { 1.0, .85, .10}, --ENERGY
 	[6] = { .60, .45, .35}, --RUNIC_POWER
 }
+CFG.Unit_Color = {
+	PF = { 1.0, 1.0, 1.0 }, -- friendly player
+	PE = { .90,   0,   0 }, -- enemy player
+	NF = { 1.0, .80, .20 }, -- friendly NPC
+	NE = { .90, .25, .15 }, -- enemy NPC
+}
 CFG.Parent = {
 	Texture = backdrop,
 	Width = {
@@ -27,9 +33,9 @@ CFG.Parent = {
 		III = 140,
 	},
 	Height = {
-		I = 14,
-		II = 14,
-		III = 14,
+		I = 20,
+		II = 20,
+		III = 20,
 	},
 }
 CFG.HP = {

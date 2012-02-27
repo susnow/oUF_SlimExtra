@@ -21,6 +21,11 @@ local CreateObjects = function(self,unit)
 	self.Castbar.Spark = self.Castbar:CreateTexture(nil,"OVERLAY")
 	self.Castbar.Text = self.Castbar.Icon.BG:CreateFontString(nil,"ARTWORK")
 	self.Castbar.Time = self.Castbar.Icon.BG:CreateFontString(nil,"ARTWORK")
+	self.ComboPoints = CreateFrame("Frame",nil,self)
+	self.ComboPoints.Num = self.ComboPoints:CreateFontString(nil,"ARTWORK")
+	self.RunesBar = CreateFrame("Frame",nil,self)
+	self.RunesBar.nextUpdate = 0
+	self.RunesBar.Runes = {}
 end
 
 local UnitSpecific = {
@@ -36,7 +41,8 @@ local UnitSpecific = {
 		UF:TagOnLeave(self,unit)
 		UF:Auras(self,unit,"I")
 		UF:Castbar(self,unit,"I")
-		UF:CastbarStrings(self,unit)
+		UF:ComboPoints(self)
+		UF:ClassElements(self,unit)
 	end,
 	target = function(self,unit)
 		CreateObjects(self,unit)
@@ -50,7 +56,6 @@ local UnitSpecific = {
 		UF:TagOnLeave(self,unit)
 		UF:Auras(self,unit,"I")
 		UF:Castbar(self,unit,"I")
-		UF:CastbarStrings(self,unit)
 	end,
 	targettarget = function(self,unit)
 		CreateObjects(self,unit)
@@ -63,6 +68,7 @@ local UnitSpecific = {
 		UF:TagOnEnter(self,unit)
 		UF:TagOnLeave(self,unit)
 		UF:Auras(self,unit,"II")
+		UF:Castbar(self,unit,"II")
 	end,
 	focus = function(self,unit)
 		CreateObjects(self,unit)
@@ -71,6 +77,7 @@ local UnitSpecific = {
 		UF:HealthValue(self,unit,"III")
 		UF:PaddingHealth(self,unit)
 		UF:PowerValue(self,unit,"III")
+		UF:Castbar(self,unit,"III")
 		UF:Name(self,unit)
 		UF:TagOnEnter(self,unit)
 		UF:TagOnLeave(self,unit)
@@ -82,6 +89,7 @@ local UnitSpecific = {
 		UF:HealthValue(self,unit,"II")
 		UF:PaddingHealth(self,unit)
 		UF:PowerValue(self,unit,"II")
+		UF:Castbar(self,unit,"II")
 		UF:Name(self,unit)
 		UF:TagOnEnter(self,unit)
 		UF:TagOnLeave(self,unit)
@@ -121,10 +129,10 @@ end
 
 
 oUF:Factory(function(self)
-	local player = spawnHelper(self, 'player', "BOTTOM",UIParent,"BOTTOM", 0, 300)
-	local target = spawnHelper(self, 'target', "TOPLEFT", player,"BOTTOMLEFT", 0, -75)
-	local targettarget = spawnHelper(self, 'targettarget', "TOPLEFT",target,"TOPRIGHT", 4, 0)
-	local pet = spawnHelper(self, 'pet', "TOPLEFT",player,"TOPRIGHT",4,0)
-	local focus = spawnHelper(self, 'focus', "TOPLEFT",target,"BOTTOMLEFT",0,-80)
+	local player = spawnHelper(self, 'player', "BOTTOM",UIParent,"BOTTOM", 0, 140)
+	local target = spawnHelper(self, 'target', "BOTTOMLEFT", player,"TOPLEFT", 0, 75)
+	local targettarget = spawnHelper(self, 'targettarget', "TOPLEFT",target,"TOPRIGHT", 8, 0)
+	local pet = spawnHelper(self, 'pet', "TOPLEFT",player,"TOPRIGHT",8,0)
+	local focus = spawnHelper(self, 'focus', "TOPLEFT",player,"TOPRIGHT",140,0)
 	local focustarget = spawnHelper(self, 'focustarget', "TOPLEFT",focus,"TOPRIGHT", 4, 0)
 end)
