@@ -1,12 +1,12 @@
 ﻿local AddOn, UF = ...
+local CFG = UF.CFG
 
 local CreateObjects = function(self,unit)
 	self.menu = menu
 	self.nextUpdate = 0
 	self.Health = CreateFrame("StatusBar",nil,self)
+	self.Health.bg = self.Health:CreateTexture(nil,"BACKGROUND")
 	self.Health.BG = CreateFrame("Frame",nil,self.Health)
-	self.Health.Padding = CreateFrame("StatusBar",nil,self.Health)
-	self.Health.Padding.nextUpdate = 0
 	self.Health.Percent = self.Health:CreateFontString(nil,"OVERLAY")
 	self.Health.Value = self.Health:CreateFontString(nil,"OVERLAY")
 	self.Power = CreateFrame("StatusBar",nil,self)
@@ -24,8 +24,15 @@ local CreateObjects = function(self,unit)
 	self.ComboPoints = CreateFrame("Frame",nil,self)
 	self.ComboPoints.Num = self.ComboPoints:CreateFontString(nil,"ARTWORK")
 	self.RunesBar = CreateFrame("Frame",nil,self)
-	self.RunesBar.nextUpdate = 0
 	self.RunesBar.Runes = {}
+	self.HolyPowerBar = CreateFrame("Frame",nil,self)
+	self.HolyPowerBar.Num = self.HolyPowerBar:CreateFontString(nil,"ARTWORK") 
+	self.SoulShardBar = CreateFrame("Frame",nil,self)
+	self.SoulShardBar.Num = self.SoulShardBar:CreateFontString(nil,"ARTWORK")
+	self.TotemBar = CreateFrame("Frame",nil,self)
+	self.TotemBar.Totems = {}
+	self.Eclipse = CreateFrame("Frame",nil,self)
+	self.Druidmana = CreateFrame("Frame",nil,self)
 end
 
 local UnitSpecific = {
@@ -33,9 +40,8 @@ local UnitSpecific = {
 		CreateObjects(self,unit)
 		UF:Parent(self,unit,"I")
 		UF:Health(self,unit,"I")
-		UF:PaddingHealth(self,unit)
-		UF:HealthValue(self,unit,"I")
-		UF:PowerValue(self,unit,"I")
+		UF:HealthValue(self,unit,true)
+		UF:PowerValue(self,unit,true)
 		UF:Name(self,unit)
 		UF:TagOnEnter(self,unit)
 		UF:TagOnLeave(self,unit)
@@ -48,9 +54,8 @@ local UnitSpecific = {
 		CreateObjects(self,unit)
 		UF:Parent(self,unit,"I")
 		UF:Health(self,unit,"I")
-		UF:HealthValue(self,unit,"I")
-		UF:PaddingHealth(self,unit)
-		UF:PowerValue(self,unit,"I")
+		UF:HealthValue(self,unit,true)
+		UF:PowerValue(self,unit,true)
 		UF:Name(self,unit)
 		UF:TagOnEnter(self,unit)
 		UF:TagOnLeave(self,unit)
@@ -61,9 +66,8 @@ local UnitSpecific = {
 		CreateObjects(self,unit)
 		UF:Parent(self,unit,"II")
 		UF:Health(self,unit,"II")
-		UF:HealthValue(self,unit,"II")
-		UF:PaddingHealth(self,unit)
-		UF:PowerValue(self,unit,"II")
+		UF:HealthValue(self,unit,false)
+		UF:PowerValue(self,unit,false)
 		UF:Name(self,unit)
 		UF:TagOnEnter(self,unit)
 		UF:TagOnLeave(self,unit)
@@ -73,10 +77,9 @@ local UnitSpecific = {
 	focus = function(self,unit)
 		CreateObjects(self,unit)
 		UF:Parent(self,unit,"III")
-		UF:Health(self,unit,"III")
+		UF:Health(self,unit,true)
 		UF:HealthValue(self,unit,"III")
-		UF:PaddingHealth(self,unit)
-		UF:PowerValue(self,unit,"III")
+		UF:PowerValue(self,unit,true)
 		UF:Castbar(self,unit,"III")
 		UF:Name(self,unit)
 		UF:TagOnEnter(self,unit)
@@ -86,9 +89,8 @@ local UnitSpecific = {
 		CreateObjects(self,unit)
 		UF:Parent(self,unit,"II")
 		UF:Health(self,unit,"II")
-		UF:HealthValue(self,unit,"II")
-		UF:PaddingHealth(self,unit)
-		UF:PowerValue(self,unit,"II")
+		UF:HealthValue(self,unit,false)
+		UF:PowerValue(self,unit,false)
 		UF:Castbar(self,unit,"II")
 		UF:Name(self,unit)
 		UF:TagOnEnter(self,unit)
@@ -98,15 +100,58 @@ local UnitSpecific = {
 		CreateObjects(self,unit)
 		UF:Parent(self,unit,"II")
 		UF:Health(self,unit,"II")
-		UF:HealthValue(self,unit,"II")
-		UF:PaddingHealth(self,unit)
-		UF:PowerValue(self,unit,"I")
+		UF:HealthValue(self,unit,false)
+		UF:PowerValue(self,unit,true)
 		UF:Name(self,unit)
+		UF:Castbar(self,unit,"II")
 		UF:TagOnEnter(self,unit)
 		UF:TagOnLeave(self,unit)
 	end,
+	party = function(self,unit)
+		if self:GetAttribute("unitsuffix") == "target" then  --here's party target's layout function
+			CreateObjects(self,unit)
+			UF:Parent(self,unit,"II")
+			UF:Health(self,unit,"II")
+			UF:HealthValue(self,unit,false)
+			UF:PowerValue(self,unit,true)
+			UF:Name(self,unit)
+			UF:Castbar(self,unit,"II")
+			UF:TagOnEnter(self,unit)
+			UF:TagOnLeave(self,unit)
+		elseif self:GetAttribute("unitsuffix") == "pet" then  --here's party pet's layout function
+			CreateObjects(self,unit)
+			UF:Parent(self,unit,"II")
+			UF:Health(self,unit,"II")
+			UF:HealthValue(self,unit,false)
+			UF:PowerValue(self,unit,false)
+			UF:Name(self,unit)
+			UF:Castbar(self,unit,"II")
+			UF:TagOnEnter(self,unit)
+			UF:TagOnLeave(self,unit)
+		else
+			CreateObjects(self,unit)
+			UF:Parent(self,unit,"III")
+			UF:Health(self,unit,"III")
+			UF:HealthValue(self,unit,true)
+			UF:PowerValue(self,unit,true)
+			UF:Castbar(self,unit,"III")
+			UF:Name(self,unit)
+			UF:TagOnEnter(self,unit)
+			UF:TagOnLeave(self,unit)
+		end
+	end,
+	boss = function(self,unit)
+		CreateObjects(self,unit)
+			UF:Parent(self,unit,"II")
+			UF:Health(self,unit,"II")
+			UF:HealthValue(self,unit,"II")
+			UF:PowerValue(self,unit,"I")
+			UF:Name(self,unit)
+			UF:Castbar(self,unit,"II")
+			UF:TagOnEnter(self,unit)
+			UF:TagOnLeave(self,unit)
+	end,
 }
-
 
 oUF:RegisterStyle("SlimExtra", CreateObjects)
 for unit,layout in next, UnitSpecific do
@@ -135,4 +180,15 @@ oUF:Factory(function(self)
 	local pet = spawnHelper(self, 'pet', "TOPLEFT",player,"TOPRIGHT",8,0)
 	local focus = spawnHelper(self, 'focus', "TOPLEFT",player,"TOPRIGHT",140,0)
 	local focustarget = spawnHelper(self, 'focustarget', "TOPLEFT",focus,"TOPRIGHT", 4, 0)
+
+	self:SetActiveStyle'SlimExtra - Party'
+	local party = self:SpawnHeader('oUF_Party',nil, 'custom [group:party,nogroup:raid][@raid6,noexists,group:raid] show;hide',
+		'showParty', true,
+		'yOffset', -50,
+		'template', 'oUF_SlimExtraRaid',
+		'oUF-initialConfigFunction',([[
+			self:SetWidth(%d)
+			self:SetHeight(%d)
+		]]):format(CFG.Parent.Width["III"],CFG.Parent.Height["III"]))
+		party:SetPoint("BOTTOMRIGHT",player,"BOTTOMLEFT",-50, 40)
 end)

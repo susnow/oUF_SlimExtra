@@ -3,6 +3,7 @@
 ## Author: susnow
 ## Notes: oUF_SlimExtra
 
+SlimExtra.xml
 config.lua
 styleFunc.lua
 core.lua

@@ -18,6 +18,8 @@ CFG.PP_Color = {
 	[2] = { 1.0, .50, .25}, --FOCUS
 	[3] = { 1.0, .85, .10}, --ENERGY
 	[6] = { .60, .45, .35}, --RUNIC_POWER
+	[7] = { 1.0, .75, .13}, --HOLY_POWER
+	[8] = { .58, .51, .79}, --SOUL_SHARDS
 }
 CFG.Unit_Color = {
 	PF = { 1.0, 1.0, 1.0 }, -- friendly player
@@ -29,7 +31,7 @@ CFG.Parent = {
 	Texture = backdrop,
 	Width = {
 		I = 210,
-		II = 70,
+		II = 68,
 		III = 140,
 	},
 	Height = {
