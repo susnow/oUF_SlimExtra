@@ -249,6 +249,21 @@ function UF:Name(self,unit)
 	obj:SetAlpha(0)
 end
 
+function UF:TargetAtYou(self,unit,flag)
+	if unit ~= "targettarget" then return end
+	local obj = self.Targetyou
+	obj:SetFont(CFG.Global_Font,14,"OUTLINE")
+	obj:SetPoint("LEFT",self,"RIGHT",20,0)
+	self.Health:RegisterEvent("UNIT_TARGET")
+	self.Health:SetScript("OnEvent",function()
+		if self.Name:GetText() == UnitName("player") then
+			obj:SetText("@You")
+		else 
+			obj:SetText("")
+		end
+	end)
+end
+
 function UF:ComboPoints(self)
 	local obj = self.ComboPoints
 	obj:SetSize(50,50)
