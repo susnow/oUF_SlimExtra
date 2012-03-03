@@ -1,7 +1,47 @@
 ﻿local AddOn, UF = ...
 local CFG = UF.CFG
 
-function UF:Parent(self,unit,flag)
+
+local dropdown = CreateFrame("Frame", "MyAddOnUnitDropDownMenu",UIParent,"UIDropDownMenuTemplate")
+UIDropDownMenu_Initialize(dropdown, function(self)
+	local unit = self:GetParent().unit
+	if not unit then return end
+
+	local menu, name, id
+	if UnitIsUnit(unit, "player") then
+		menu = "SELF"
+	elseif UnitIsUnit(unit, "vehicle") then
+		menu = "VEHICLE"
+	elseif UnitIsUnit(unit, "pet") then
+		menu = "PET"
+	elseif UnitIsPlayer(unit) then
+		id = UnitInRaid(unit)
+		if id then
+			menu = "RAID_PLAYER"
+			name = GetRaidRosterInfo(id)
+		elseif UnitInParty(unit) then
+			menu = "PARTY"
+		else
+			menu = "PLAYER"
+		end
+	else
+		menu = "TARGET"
+		name = RAID_TARGET_ICON
+	end
+	if menu then
+		UnitPopup_ShowMenu(self, menu, unit, name, id)
+	end
+end, "MENU")
+
+local menu = function(self)
+	dropdown:SetParent(self)
+	ToggleDropDownMenu(1, nil, dropdown, "cursor", 0, 0)
+end
+
+
+function UF:Parent(self,unit,flag,dropdown)
+	self.menu = menu 
+	self:SetAttribute("*type2", "menu")
 	self:HookScript("OnEnter",UnitFrame_OnEnter)
 	self:HookScript("OnLeave",UnitFrame_OnLeave)
 	self:RegisterForClicks"AnyUp"
@@ -249,7 +289,7 @@ function UF:Name(self,unit)
 	obj:SetAlpha(0)
 end
 
-function UF:TargetAtYou(self,unit,flag)
+function UF:TargetAtYou(self,unit)
 	if unit ~= "targettarget" then return end
 	local obj = self.Targetyou
 	obj:SetFont(CFG.Global_Font,14,"OUTLINE")

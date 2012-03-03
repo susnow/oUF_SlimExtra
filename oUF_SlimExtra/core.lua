@@ -2,7 +2,6 @@
 local CFG = UF.CFG
 
 local CreateObjects = function(self,unit)
-	self.menu = menu
 	self.nextUpdate = 0
 	self.Health = CreateFrame("StatusBar",nil,self)
 	self.Health.bg = self.Health:CreateTexture(nil,"BACKGROUND")
@@ -80,7 +79,7 @@ local UnitSpecific = {
 		UF:TagOnLeave(self,unit)
 		UF:Auras(self,unit,"II")
 		UF:Castbar(self,unit,"II")
-		UF:TargetAtYou(self,unit,1)
+		UF:TargetAtYou(self,unit)
 	end,
 	focus = function(self,unit)
 		CreateObjects(self,unit)
