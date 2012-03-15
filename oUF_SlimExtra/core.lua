@@ -149,14 +149,25 @@ local UnitSpecific = {
 	end,
 	boss = function(self,unit)
 		CreateObjects(self,unit)
-			UF:Parent(self,unit,"II")
-			UF:Health(self,unit,"II")
-			UF:HealthValue(self,unit,"II")
-			UF:PowerValue(self,unit,"I")
-			UF:Name(self,unit)
-			UF:Castbar(self,unit,"II")
-			UF:TagOnEnter(self,unit)
-			UF:TagOnLeave(self,unit)
+		UF:Parent(self,unit,"II")
+		UF:Health(self,unit,"II")
+		UF:HealthValue(self,unit,"II")
+		UF:PowerValue(self,unit,"I")
+		UF:Name(self,unit)
+		UF:Castbar(self,unit,"II")
+		UF:TagOnEnter(self,unit)
+		UF:TagOnLeave(self,unit)
+	end,
+	raid = function(self,unit)
+		CreateObjects(self,unit)
+		UF:Parent(self,unit,"II")
+		UF:Health(self,unit,"II")
+		UF:HealthValue(self,unit,"II")
+		UF:PowerValue(self,unit,"I")
+		UF:Castbar(self,unit,"II")
+		UF:Name(self,unit)
+		UF:TagOnEnter(self,unit)
+		UF:TagOnLeave(self,unit)
 	end,
 }
 
@@ -198,4 +209,31 @@ oUF:Factory(function(self)
 			self:SetHeight(%d)
 		]]):format(CFG.Parent.Width["III"],CFG.Parent.Height["III"]))
 		party:SetPoint("BOTTOMRIGHT",player,"BOTTOMLEFT",-50, 40)
+	
+	self:SetActiveStyle'SlimExtra - Raid'
+	local raid = self:SpawnHeader('oUF_Raid',nil,'raid',--'solo,party,raid',
+		'showRaid', true,
+		'showPlayer', true,
+		'groupFilter', '1,2,3,4,5',
+		'groupingOrder', '1,2,3,4,5',
+		'groupBy', 'GROUP',
+		'maxColumn', 10,
+		'unitsPerColumn', 10,
+		'column', 10,
+		'point', "TOP",
+		'columnAnchorPoint', "TOP",
+		'columnSpacing', 10,
+		'xOffset', 0,
+		'yOffset', -6,
+		'oUF-initialConfigFunction', ([[
+			self:SetWidth(%d)
+			self:SetHeight(%d)
+    ]]):format(CFG.Parent.Width["III"],CFG.Parent.Height["III"]))
+	raid:SetPoint("TOPLEFT", UIParent, 50, -30)	
+
+
+	CompactRaidFrameManager:UnregisterAllEvents()
+	CompactRaidFrameManager:Hide()
+	CompactRaidFrameContainer:UnregisterAllEvents()
+	CompactRaidFrameContainer:Hide()
 end)

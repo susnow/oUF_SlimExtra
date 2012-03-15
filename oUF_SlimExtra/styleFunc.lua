@@ -477,6 +477,7 @@ function UF:TagOnLeave(self,unit)
 					self.Health.Value:SetAlpha(tempNum)	
 					self.Power.Value:SetAlpha(tempNum)
 				else
+					self.Name:SetAlpha(0)
 					self:SetScript("OnUpdate",nil)
 				end
 				self.nextUpdate = 0
